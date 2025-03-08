@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ride Booking App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
@@ -14,9 +14,10 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            background: #000;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,21 +30,21 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
+            background: #1a1a1a;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.05);
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
         }
 
         h1 {
             font-size: 28px;
             font-weight: 700;
-            color: #2c3e50;
+            color: #fff;
             text-align: center;
             margin-bottom: 25px;
         }
@@ -51,7 +52,7 @@
         h2 {
             font-size: 20px;
             font-weight: 600;
-            color: #34495e;
+            color: #fff;
             margin-bottom: 15px;
         }
 
@@ -70,37 +71,44 @@
         .input-field {
             padding: 12px 15px;
             font-size: 16px;
-            border: none;
-            border-radius: 10px;
-            background: #f0f2f5;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #252525;
+            color: #fff;
             outline: none;
             transition: all 0.3s ease;
         }
 
         .input-field:focus {
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(110, 142, 251, 0.3);
+            border-color: #fff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
         }
 
         .btn {
             padding: 12px;
             font-size: 16px;
             font-weight: 600;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            color: white;
+            background: #fff;
+            color: #000;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.4);
+            background: #e0e0e0;
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
         }
 
         .btn-secondary {
-            background: #95a5a6;
+            background: #666;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
         }
 
         .hidden {
@@ -108,27 +116,28 @@
         }
 
         .details {
-            background: #f8f9fa;
+            background: #252525;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-bottom: 25px;
         }
 
         .details p {
             margin-bottom: 12px;
             font-size: 16px;
-            color: #34495e;
+            color: #ccc;
         }
 
         .details strong {
-            color: #2c3e50;
+            color: #fff;
             font-weight: 600;
         }
 
         #map, #driver-map {
             height: 200px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-bottom: 20px;
+            background: #333;
         }
 
         .fade-in {
@@ -153,14 +162,14 @@
         <div id="mode-selection" class="card fade-in">
             <h1>Ride Booking App</h1>
             <div class="mode-buttons">
-                <button onclick="selectMode('passenger')" class="btn">Passenger Mode</button>
-                <button onclick="selectMode('driver')" class="btn">Driver Mode</button>
+                <button onclick="selectMode('passenger')" class="btn">Passenger</button>
+                <button onclick="selectMode('driver')" class="btn">Driver</button>
             </div>
         </div>
 
         <!-- Passenger Home Screen -->
         <div id="passenger-home" class="card hidden fade-in">
-            <h1>Book Your Ride</h1>
+            <h1>Book a Ride</h1>
             <div class="form-group">
                 <input type="text" id="pickup" placeholder="Pickup Location" class="input-field" readonly>
                 <input type="text" id="destination" placeholder="Destination" class="input-field" readonly>
@@ -186,15 +195,16 @@
 
         <!-- Confirmation Screen -->
         <div id="confirmation-screen" class="card hidden fade-in">
-            <h1>Ride Confirmed!</h1>
+            <h1>Ride Confirmed</h1>
             <div class="details">
                 <p><strong>Pickup:</strong> <span id="confirm-pickup"></span></p>
                 <p><strong>Destination:</strong> <span id="confirm-destination"></span></p>
                 <p><strong>Ride Type:</strong> <span id="confirm-ride-type"></span></p>
+                <p><strong>Distance:</strong> <span id="confirm-distance"></span></p>
                 <p><strong>Price (PKR):</strong> <span id="confirm-price"></span></p>
                 <p><strong>Driver:</strong> <span id="confirm-driver">Searching...</span></p>
             </div>
-            <button onclick="backToHome()" class="btn btn-secondary">Back Home</button>
+            <button onclick="backToHome()" class="btn btn-secondary">Back</button>
         </div>
     </div>
 
@@ -202,29 +212,47 @@
     <script>
         let currentMode = '';
         let passengerMap, driverMap, pickupMarker, destinationMarker, driverMarker;
+        let pickupLatLng, destinationLatLng;
 
-        // Initialize Maps
+        // Haversine formula to calculate distance in kilometers
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // Distance in km
+        }
+
+        // Initialize Maps with Stadia Alidade Smooth Dark style
         function initializePassengerMap() {
-            passengerMap = L.map('map').setView([24.8607, 67.0011], 13); // Karachi, Pakistan
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+            passengerMap = L.map('map').setView([33.6844, 73.0479], 13); // Islamabad, Pakistan
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>',
+                maxZoom: 20
             }).addTo(passengerMap);
 
             passengerMap.on('click', function(e) {
                 if (!pickupMarker) {
                     pickupMarker = L.marker(e.latlng).addTo(passengerMap);
+                    pickupLatLng = e.latlng;
                     document.getElementById('pickup').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
                 } else if (!destinationMarker) {
                     destinationMarker = L.marker(e.latlng).addTo(passengerMap);
+                    destinationLatLng = e.latlng;
                     document.getElementById('destination').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
                 }
             });
         }
 
         function initializeDriverMap() {
-            driverMap = L.map('driver-map').setView([24.8607, 67.0011], 13); // Karachi, Pakistan
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+            driverMap = L.map('driver-map').setView([33.6844, 73.0479], 13); // Islamabad, Pakistan
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>',
+                maxZoom: 20
             }).addTo(driverMap);
 
             driverMap.on('click', function(e) {
@@ -268,21 +296,34 @@
             document.getElementById('confirm-ride-type').textContent = 
                 rideType.charAt(0).toUpperCase() + rideType.slice(1);
 
-            let price;
+            // Calculate distance and fare
+            const distance = calculateDistance(
+                pickupLatLng.lat, pickupLatLng.lng,
+                destinationLatLng.lat, destinationLatLng.lng
+            );
+            const baseFare = 200; // Minimum fare
+            const extraKm = Math.max(0, distance - 10); // First 10 km included in base fare
+            const extraFare = Math.floor(extraKm / 10) * 120; // PKR 120 per additional 10 km
+            const totalFare = baseFare + extraFare;
+
+            // Apply ride type multiplier
+            let finalFare;
             switch (rideType) {
                 case 'economy':
-                    price = 'PKR 500';
+                    finalFare = totalFare;
                     break;
                 case 'premium':
-                    price = 'PKR 800';
+                    finalFare = totalFare * 1.5; // 50% more
                     break;
                 case 'suv':
-                    price = 'PKR 1200';
+                    finalFare = totalFare * 2; // 100% more
                     break;
                 default:
-                    price = 'PKR 500';
+                    finalFare = totalFare;
             }
-            document.getElementById('confirm-price').textContent = price;
+
+            document.getElementById('confirm-distance').textContent = `${distance.toFixed(2)} km`;
+            document.getElementById('confirm-price').textContent = `PKR ${Math.round(finalFare)}`;
         }
 
         function acceptRide() {
@@ -307,6 +348,7 @@
             if (destinationMarker) passengerMap.removeLayer(destinationMarker);
             if (driverMarker) driverMap.removeLayer(driverMarker);
             pickupMarker = destinationMarker = driverMarker = null;
+            pickupLatLng = destinationLatLng = null;
 
             document.getElementById('confirmation-screen').classList.add('hidden');
             document.getElementById('passenger-home').classList.add('hidden');
@@ -316,4 +358,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
