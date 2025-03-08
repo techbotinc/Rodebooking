@@ -56,7 +56,7 @@
             margin-bottom: 15px;
         }
 
-        .form-group {
+        .form-group, .profile-group {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -115,20 +115,20 @@
             display: none;
         }
 
-        .details {
+        .details, .profile-info {
             background: #e5e5e5;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 25px;
         }
 
-        .details p {
+        .details p, .profile-info p {
             margin-bottom: 12px;
             font-size: 16px;
             color: #444;
         }
 
-        .details strong {
+        .details strong, .profile-info strong {
             color: #000;
             font-weight: 600;
         }
@@ -171,6 +171,14 @@
         <!-- Passenger Home Screen -->
         <div id="passenger-home" class="card hidden fade-in">
             <h1>Book a Ride</h1>
+            <div class="profile-group" id="passenger-profile">
+                <h2>Passenger Profile</h2>
+                <div class="profile-info">
+                    <p><strong>Name:</strong> <span id="passenger-name">John Doe</span></p>
+                    <p><strong>Email:</strong> <span id="passenger-email">john.doe@example.com</span></p>
+                    <p><strong>Phone:</strong> <span id="passenger-phone">+92 300 1234567</span></p>
+                </div>
+            </div>
             <div class="form-group">
                 <input type="text" id="pickup" placeholder="Pickup Location" class="input-field" readonly>
                 <input type="text" id="destination" placeholder="Destination" class="input-field" readonly>
@@ -187,6 +195,15 @@
         <!-- Driver Home Screen -->
         <div id="driver-home" class="card hidden fade-in">
             <h1>Driver Dashboard</h1>
+            <div class="profile-group" id="driver-profile">
+                <h2>Driver Profile</h2>
+                <div class="profile-info">
+                    <p><strong>Name:</strong> <span id="driver-name">Ahmed Khan</span></p>
+                    <p><strong>Email:</strong> <span id="driver-email">ahmed.khan@example.com</span></p>
+                    <p><strong>Phone:</strong> <span id="driver-phone">+92 321 9876543</span></p>
+                    <p><strong>Vehicle:</strong> <span id="driver-vehicle">Toyota Corolla 2020</span></p>
+                </div>
+            </div>
             <div class="form-group">
                 <input type="text" id="driver-location" placeholder="Your Current Location" class="input-field" readonly>
                 <div id="driver-map"></div>
@@ -289,6 +306,13 @@
                 return;
             }
 
+            // Notify driver (simulated with an alert)
+            if (currentMode === 'passenger') {
+                const passengerName = document.getElementById('passenger-name').textContent;
+                const notification = `New Ride Booking!\nPassenger: ${passengerName}\nPickup: ${pickup}\nDestination: ${destination}\nRide Type: ${rideType}`;
+                setTimeout(() => alert(notification), 500); // Simulated delay for driver notification
+            }
+
             document.getElementById('passenger-home').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
 
@@ -336,7 +360,8 @@
 
             document.getElementById('driver-home').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
-            document.getElementById('confirm-driver').textContent = 'Driver Assigned (Location: ' + driverLocation + ')';
+            const driverName = document.getElementById('driver-name').textContent;
+            document.getElementById('confirm-driver').textContent = `${driverName} (Location: ${driverLocation})`;
         }
 
         function backToHome() {
