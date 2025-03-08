@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride Booking App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .input-field {
+            padding: 12px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            background: #f0f2f5;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(110, 142, 251, 0.3);
+        }
+
+        .btn {
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .details p {
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #34495e;
+        }
+
+        .details strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        #map, #driver-map {
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Mode Selection Screen -->
+        <div id="mode-selection" class="card fade-in">
+            <h1>Ride Booking App</h1>
+            <div class="mode-buttons">
+                <button onclick="selectMode('passenger')" class="btn">Passenger Mode</button>
+                <button onclick="selectMode('driver')" class="btn">Driver Mode</button>
+            </div>
+        </div>
+
+        <!-- Passenger Home Screen -->
+        <div id="passenger-home" class="card hidden fade-in">
+            <h1>Book Your Ride</h1>
+            <div class="form-group">
+                <input type="text" id="pickup" placeholder="Pickup Location" class="input-field" readonly>
+                <input type="text" id="destination" placeholder="Destination" class="input-field" readonly>
+                <div id="map"></div>
+                <select id="ride-type" class="input-field">
+                    <option value="economy">Economy</option>
+                    <option value="premium">Premium</option>
+                    <option value="suv">SUV</option>
+                </select>
+                <button onclick="bookRide()" class="btn">Book Ride</button>
+            </div>
+        </div>
+
+        <!-- Driver Home Screen -->
+        <div id="driver-home" class="card hidden fade-in">
+            <h1>Driver Dashboard</h1>
+            <div class="form-group">
+                <input type="text" id="driver-location" placeholder="Your Current Location" class="input-field" readonly>
+                <div id="driver-map"></div>
+                <button onclick="acceptRide()" class="btn">Accept Ride</button>
+            </div>
+        </div>
+
+        <!-- Confirmation Screen -->
+        <div id="confirmation-screen" class="card hidden fade-in">
+            <h1>Ride Confirmed!</h1>
+            <div class="details">
+                <p><strong>Pickup:</strong> <span id="confirm-pickup"></span></p>
+                <p><strong>Destination:</strong> <span id="confirm-destination"></span></p>
+                <p><strong>Ride Type:</strong> <span id="confirm-ride-type"></span></p>
+                <p><strong>Price (PKR):</strong> <span id="confirm-price"></span></p>
+                <p><strong>Driver:</strong> <span id="confirm-driver">Searching...</span></p>
+            </div>
+            <button onclick="backToHome()" class="btn btn-secondary">Back Home</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let currentMode = '';
+        let passengerMap, driverMap, pickupMarker, destinationMarker, driverMarker;
+
+        // Initialize Maps
+        function initializePassengerMap() {
+            passengerMap = L.map('map').setView([24.8607, 67.0011], 13); // Karachi, Pakistan
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(passengerMap);
+
+            passengerMap.on('click', function(e) {
+                if (!pickupMarker) {
+                    pickupMarker = L.marker(e.latlng).addTo(passengerMap);
+                    document.getElementById('pickup').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
+                } else if (!destinationMarker) {
+                    destinationMarker = L.marker(e.latlng).addTo(passengerMap);
+                    document.getElementById('destination').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
+                }
+            });
+        }
+
+        function initializeDriverMap() {
+            driverMap = L.map('driver-map').setView([24.8607, 67.0011], 13); // Karachi, Pakistan
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(driverMap);
+
+            driverMap.on('click', function(e) {
+                if (!driverMarker) {
+                    driverMarker = L.marker(e.latlng).addTo(driverMap);
+                    document.getElementById('driver-location').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
+                } else {
+                    driverMarker.setLatLng(e.latlng);
+                    document.getElementById('driver-location').value = `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`;
+                }
+            });
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-selection').classList.add('hidden');
+            if (mode === 'passenger') {
+                document.getElementById('passenger-home').classList.remove('hidden');
+                if (!passengerMap) initializePassengerMap();
+            } else if (mode === 'driver') {
+                document.getElementById('driver-home').classList.remove('hidden');
+                if (!driverMap) initializeDriverMap();
+            }
+        }
+
+        function bookRide() {
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            const rideType = document.getElementById('ride-type').value;
+
+            if (!pickup || !destination) {
+                alert('Please select both pickup and destination locations on the map');
+                return;
+            }
+
+            document.getElementById('passenger-home').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.remove('hidden');
+
+            document.getElementById('confirm-pickup').textContent = pickup;
+            document.getElementById('confirm-destination').textContent = destination;
+            document.getElementById('confirm-ride-type').textContent = 
+                rideType.charAt(0).toUpperCase() + rideType.slice(1);
+
+            let price;
+            switch (rideType) {
+                case 'economy':
+                    price = 'PKR 500';
+                    break;
+                case 'premium':
+                    price = 'PKR 800';
+                    break;
+                case 'suv':
+                    price = 'PKR 1200';
+                    break;
+                default:
+                    price = 'PKR 500';
+            }
+            document.getElementById('confirm-price').textContent = price;
+        }
+
+        function acceptRide() {
+            const driverLocation = document.getElementById('driver-location').value;
+            if (!driverLocation) {
+                alert('Please select your current location on the map');
+                return;
+            }
+
+            document.getElementById('driver-home').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.remove('hidden');
+            document.getElementById('confirm-driver').textContent = 'Driver Assigned (Location: ' + driverLocation + ')';
+        }
+
+        function backToHome() {
+            document.getElementById('pickup').value = '';
+            document.getElementById('destination').value = '';
+            document.getElementById('driver-location').value = '';
+            document.getElementById('ride-type').value = 'economy';
+
+            if (pickupMarker) passengerMap.removeLayer(pickupMarker);
+            if (destinationMarker) passengerMap.removeLayer(destinationMarker);
+            if (driverMarker) driverMap.removeLayer(driverMarker);
+            pickupMarker = destinationMarker = driverMarker = null;
+
+            document.getElementById('confirmation-screen').classList.add('hidden');
+            document.getElementById('passenger-home').classList.add('hidden');
+            document.getElementById('driver-home').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+            currentMode = '';
+        }
+    </script>
+</body>
+  </html>
